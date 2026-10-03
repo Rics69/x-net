@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	core_logger "github.com/Rics69/task-tracker/internal/core/logger"
-	core_http_middleware "github.com/Rics69/task-tracker/internal/core/transport/http/middleware"
+	core_logger "github.com/Rics69/x-chat/internal/core/logger"
+	core_http_middleware "github.com/Rics69/x-chat/internal/core/transport/http/middleware"
 	"go.uber.org/zap"
 
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -41,21 +41,14 @@ func (s *HTTPServer) RegisterAPIRouters(routers ...*APIVersionRouter) {
 }
 
 func (s *HTTPServer) RegisterSwagger() {
+	// doc.json отдельно не регистрируем: httpSwagger.Handler сам отдаёт его по /swagger/doc.json
+	// через swag.ReadDoc(), а спеку туда кладёт init() из пакета docs (blank import в main)
 	s.mux.Handle(
 		"/swagger/",
 		httpSwagger.Handler(
 			httpSwagger.URL("/swagger/doc.json"),
-			httpSwagger.DefaultModelsExpandDepth(-1), 
+			httpSwagger.DefaultModelsExpandDepth(-1),
 		),
-	)
-
-	s.mux.HandleFunc(
-		"/swagger/doc.json",
-		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(docs.SwaggerInfo.ReadDoc()))
-		},
 	)
 }
 

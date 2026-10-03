@@ -1,1 +1,3 @@
-golang task tracker
+# X-Chat
+
+Twitter-like сервис на Go: общая лента постов с обновлением в реальном времени через WebSocket.

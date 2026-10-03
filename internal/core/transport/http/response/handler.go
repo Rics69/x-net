@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	core_errors "github.com/Rics69/task-tracker/internal/core/errors"
-	core_logger "github.com/Rics69/task-tracker/internal/core/logger"
+	core_errors "github.com/Rics69/x-chat/internal/core/errors"
+	core_logger "github.com/Rics69/x-chat/internal/core/logger"
 	"go.uber.org/zap"
 )
 

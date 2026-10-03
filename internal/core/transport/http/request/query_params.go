@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	core_errors "github.com/Rics69/task-tracker/internal/core/errors"
+	core_errors "github.com/Rics69/x-chat/internal/core/errors"
 )
 
 func GetIntQueryParam(r *http.Request, key string) (*int, error) {

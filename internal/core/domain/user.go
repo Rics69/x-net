@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"regexp"
 
-	core_errors "github.com/Rics69/task-tracker/internal/core/errors"
+	core_errors "github.com/Rics69/x-chat/internal/core/errors"
 )
+
+// компилим один раз на старте, а не на каждый Validate()
+var phoneNumberRegexp = regexp.MustCompile(`^\+[0-9]{9,14}$`)
 
 type User struct {
 	ID      int
@@ -40,9 +43,7 @@ func (u *User) Validate() error {
 			return fmt.Errorf("invalid `PhoneNumber` len: %d: %w", phoneNumberLength, core_errors.ErrInvalidArgument)
 		}
 
-		re := regexp.MustCompile(`^\+[0-9]{9,14}$`)
-
-		if !re.MatchString(*u.PhoneNumber) {
+		if !phoneNumberRegexp.MatchString(*u.PhoneNumber) {
 			return fmt.Errorf("invalid `PhoneNumber` format: %w", core_errors.ErrInvalidArgument)
 		}
 	}

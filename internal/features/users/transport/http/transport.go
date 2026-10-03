@@ -1,11 +1,11 @@
-package users_tranpsort_http
+package users_transport_http
 
 import (
 	"context"
 	"net/http"
 
-	"github.com/Rics69/task-tracker/internal/core/domain"
-	core_http_server "github.com/Rics69/task-tracker/internal/core/transport/http/server"
+	"github.com/Rics69/x-chat/internal/core/domain"
+	core_http_server "github.com/Rics69/x-chat/internal/core/transport/http/server"
 )
 
 type UsersHTTPHandler struct {

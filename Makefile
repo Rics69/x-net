@@ -4,15 +4,15 @@ export
 export PROJECT_ROOT= $(shell pwd)
 
 env-up:
-	@docker compose up -d task-tracker-postgres
+	@docker compose up -d xchat-postgres
 
 env-down:
-	@docker compose down task-tracker-postgres
+	@docker compose down xchat-postgres
 
 env-cleanup:
 	@read -p "Очистить volume файлы бд? Опасность утери данных. [y/N]: " ans; \
 	if [ "$$ans" = "y" ]; then \
-		docker compose down task-tracker-postgres port-forwarder && \
+		docker compose down xchat-postgres port-forwarder && \
 		rm -rf ${PROJECT_ROOT}/out/pgdata && \
 		echo "Файлы очищены"; \
 	else \
@@ -26,11 +26,11 @@ env-port-close:
 	@docker compose down port-forwarder
 
 migrate-create:
-	@if [ -z "$(seq)"]; then \
+	@if [ -z "$(seq)" ]; then \
 		echo "Отсутствует параметр seq. Пример: make migrate-create seq=init"; \
 		exit 1; \
 	fi; \
-	docker compose run --rm task-tracker-postgres-migrate \
+	docker compose run --rm xchat-postgres-migrate \
 		create \
 		-ext sql \
 		-dir /migrations \
@@ -43,13 +43,13 @@ migrate-down:
 	@make migrate-action action=down
 
 migrate-action:
-	@if [ -z "$(action)"]; then \
+	@if [ -z "$(action)" ]; then \
 		echo "Отсутствует параметр action. Пример: make migrate-action action=up"; \
 		exit 1; \
 	fi; \
-	docker compose run --rm task-tracker-postgres-migrate \
+	docker compose run --rm xchat-postgres-migrate \
 		-path /migrations \
-		-database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@task-tracker-postgres:5432/${POSTGRES_DB}?sslmode=disable \
+		-database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@xchat-postgres:5432/${POSTGRES_DB}?sslmode=disable \
 		"$(action)"
 
 logs-cleanup:
@@ -61,17 +61,17 @@ logs-cleanup:
 		echo "Очистка логов  отменена"; \
 	fi
 
-tasktracker-run:
+xchat-run:
 	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
 	export POSTGRES_HOST=localhost && \
 	go mod tidy && \
-	go run ${PROJECT_ROOT}/cmd/tasktracker/main.go
+	go run ${PROJECT_ROOT}/cmd/xchat/main.go
 
-tasktracker-deploy:
-	@docker compose up -d --build task-tracker
+xchat-deploy:
+	@docker compose up -d --build xchat
 
-tasktracker-undeploy:
-	@docker compose down task-tracker
+xchat-undeploy:
+	@docker compose down xchat
 
 ps:
 	@docker compose ps
@@ -79,7 +79,7 @@ ps:
 swagger-gen:
 	@docker compose run --rm swagger \
 		init \
-		-g cmt/tasktracker/main.go \
+		-g cmd/xchat/main.go \
 		-o docs \
 		--parseInternal \
 		--parseDependency

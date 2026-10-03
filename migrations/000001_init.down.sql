@@ -1,3 +1,2 @@
-DROP TABLE tasktracker.tasks;
-DROP TABLE tasktracker.users;
-DROP SCHEMA tasktracker;
+DROP TABLE xchat.users;
+DROP SCHEMA xchat;

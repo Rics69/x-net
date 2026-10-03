@@ -1,6 +1,6 @@
 package users_postgres_repository
 
-import core_postgres_pool "github.com/Rics69/task-tracker/internal/core/repository/postgres/pool"
+import core_postgres_pool "github.com/Rics69/x-chat/internal/core/repository/postgres/pool"
 
 type UsersRepository struct {
 	pool core_postgres_pool.Pool

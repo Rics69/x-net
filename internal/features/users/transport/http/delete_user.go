@@ -1,11 +1,11 @@
-package users_tranpsort_http
+package users_transport_http
 
 import (
 	"net/http"
 
-	core_logger "github.com/Rics69/task-tracker/internal/core/logger"
-	core_http_request "github.com/Rics69/task-tracker/internal/core/transport/http/request"
-	core_http_response "github.com/Rics69/task-tracker/internal/core/transport/http/response"
+	core_logger "github.com/Rics69/x-chat/internal/core/logger"
+	core_http_request "github.com/Rics69/x-chat/internal/core/transport/http/request"
+	core_http_response "github.com/Rics69/x-chat/internal/core/transport/http/response"
 )
 
 // DeleteUser godoc

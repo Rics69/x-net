@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Rics69/task-tracker/internal/core/domain"
-	core_errors "github.com/Rics69/task-tracker/internal/core/errors"
-	core_postgres_pool "github.com/Rics69/task-tracker/internal/core/repository/postgres/pool"
+	"github.com/Rics69/x-chat/internal/core/domain"
+	core_errors "github.com/Rics69/x-chat/internal/core/errors"
+	core_postgres_pool "github.com/Rics69/x-chat/internal/core/repository/postgres/pool"
 )
 
 func (r *UsersRepository) PatchUser(ctx context.Context, id int, user domain.User) (domain.User, error) {
@@ -15,7 +15,7 @@ func (r *UsersRepository) PatchUser(ctx context.Context, id int, user domain.Use
 	defer cancel()
 
 	query := `
-	UPDATE tasktracker.users
+	UPDATE xchat.users
 	SET
 		full_name=$1,
 		phone_number=$2,

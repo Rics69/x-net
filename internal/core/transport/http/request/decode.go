@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	core_errors "github.com/Rics69/task-tracker/internal/core/errors"
+	core_errors "github.com/Rics69/x-chat/internal/core/errors"
 	"github.com/go-playground/validator/v10"
 )
 

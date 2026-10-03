@@ -1,4 +1,4 @@
-module github.com/Rics69/task-tracker
+module github.com/Rics69/x-chat
 
 go 1.26.5
 

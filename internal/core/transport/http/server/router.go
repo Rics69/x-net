@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	core_http_middleware "github.com/Rics69/task-tracker/internal/core/transport/http/middleware"
+	core_http_middleware "github.com/Rics69/x-chat/internal/core/transport/http/middleware"
 )
 
 type ApiVersion string

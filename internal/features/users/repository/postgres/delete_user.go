@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	core_errors "github.com/Rics69/task-tracker/internal/core/errors"
+	core_errors "github.com/Rics69/x-chat/internal/core/errors"
 )
 
 func (r *UsersRepository) DeleteUser(ctx context.Context, id int) error {
@@ -12,7 +12,7 @@ func (r *UsersRepository) DeleteUser(ctx context.Context, id int) error {
 	defer cancel()
 
 	query := `
-	DELETE FROM tasktracker.users
+	DELETE FROM xchat.users
 	WHERE id=$1;
 	`
 

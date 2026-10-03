@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Rics69/task-tracker/internal/core/domain"
+	"github.com/Rics69/x-chat/internal/core/domain"
 )
 
 func (r *UsersRepository) GetUsers(ctx context.Context, limit *int, offset *int) ([]domain.User, error) {
@@ -13,7 +13,7 @@ func (r *UsersRepository) GetUsers(ctx context.Context, limit *int, offset *int)
 
 	query := `
 	SELECT id, version, full_name, phone_number
-	FROM tasktracker.users
+	FROM xchat.users
 	ORDER BY id ASC
 	LIMIT $1
 	OFFSET $2;

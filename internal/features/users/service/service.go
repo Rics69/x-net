@@ -3,7 +3,7 @@ package users_service
 import (
 	"context"
 
-	"github.com/Rics69/task-tracker/internal/core/domain"
+	"github.com/Rics69/x-chat/internal/core/domain"
 )
 
 type UsersService struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Rics69/task-tracker/internal/core/domain"
+	"github.com/Rics69/x-chat/internal/core/domain"
 )
 
 func (r *UsersRepository) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
@@ -12,7 +12,7 @@ func (r *UsersRepository) CreateUser(ctx context.Context, user domain.User) (dom
 	defer cancel()
 
 	query := `
-	INSERT INTO tasktracker.users (full_name, phone_number)
+	INSERT INTO xchat.users (full_name, phone_number)
 	VALUES ($1, $2)
 	RETURNING id, version, full_name, phone_number;
 	`

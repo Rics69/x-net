@@ -1,6 +1,6 @@
 package users_postgres_repository
 
-import "github.com/Rics69/task-tracker/internal/core/domain"
+import "github.com/Rics69/x-chat/internal/core/domain"
 
 type UserModel struct {
 	ID          int

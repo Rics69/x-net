@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Rics69/task-tracker/internal/core/domain"
-	core_errors "github.com/Rics69/task-tracker/internal/core/errors"
-	core_postgres_pool "github.com/Rics69/task-tracker/internal/core/repository/postgres/pool"
+	"github.com/Rics69/x-chat/internal/core/domain"
+	core_errors "github.com/Rics69/x-chat/internal/core/errors"
+	core_postgres_pool "github.com/Rics69/x-chat/internal/core/repository/postgres/pool"
 )
 
 func (r *UsersRepository) GetUser(ctx context.Context, id int) (domain.User, error) {
@@ -16,7 +16,7 @@ func (r *UsersRepository) GetUser(ctx context.Context, id int) (domain.User, err
 
 	query := `
 	SELECT id, version, full_name, phone_number
-	FROM tasktracker.users
+	FROM xchat.users
 	WHERE id=$1;
 	`
 
