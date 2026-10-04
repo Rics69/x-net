@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	core_errors "github.com/Rics69/x-net/internal/core/errors"
+	core_logger "github.com/Rics69/x-net/internal/core/logger"
+	"go.uber.org/zap"
 )
 
 func (s *PostsService) DeletePost(ctx context.Context, id int, userID int) error {
@@ -25,6 +27,15 @@ func (s *PostsService) DeletePost(ctx context.Context, id int, userID int) error
 
 	if err := s.postsRepository.DeletePost(ctx, id); err != nil {
 		return fmt.Errorf("delete post: %w", err)
+	}
+
+	// чтобы пост пропал из открытых лент без перезагрузки
+	if err := s.eventsPublisher.PublishPostDeleted(ctx, id); err != nil {
+		core_logger.FromContext(ctx).Warn(
+			"failed to publish post deleted event",
+			zap.Int("post_id", id),
+			zap.Error(err),
+		)
 	}
 
 	return nil

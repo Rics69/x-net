@@ -8,6 +8,7 @@ import (
 
 type PostsService struct {
 	postsRepository PostsRepository
+	eventsPublisher PostsEventsPublisher
 }
 
 type PostsRepository interface {
@@ -17,8 +18,16 @@ type PostsRepository interface {
 	DeletePost(ctx context.Context, id int) error
 }
 
-func NewPostsService(postsRepository PostsRepository) *PostsService {
+// сервис не знает, КАК доставляются события: сейчас это WebSocket-хаб в этом же процессе,
+// потом будет RabbitMQ - поменяется только реализация, сервис не трогаем
+type PostsEventsPublisher interface {
+	PublishPostCreated(ctx context.Context, post domain.Post) error
+	PublishPostDeleted(ctx context.Context, postID int) error
+}
+
+func NewPostsService(postsRepository PostsRepository, eventsPublisher PostsEventsPublisher) *PostsService {
 	return &PostsService{
 		postsRepository: postsRepository,
+		eventsPublisher: eventsPublisher,
 	}
 }

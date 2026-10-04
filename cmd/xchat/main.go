@@ -14,11 +14,13 @@ import (
 	core_postgres_gorm "github.com/Rics69/x-net/internal/core/repository/postgres/gorm"
 	core_http_middleware "github.com/Rics69/x-net/internal/core/transport/http/middleware"
 	core_http_server "github.com/Rics69/x-net/internal/core/transport/http/server"
+	core_ws "github.com/Rics69/x-net/internal/core/transport/ws"
 	auth_service "github.com/Rics69/x-net/internal/features/auth/service"
 	auth_transport_http "github.com/Rics69/x-net/internal/features/auth/transport/http"
 	posts_postgres_repository "github.com/Rics69/x-net/internal/features/posts/repository/postgres"
 	posts_service "github.com/Rics69/x-net/internal/features/posts/service"
 	posts_transport_http "github.com/Rics69/x-net/internal/features/posts/transport/http"
+	posts_transport_ws "github.com/Rics69/x-net/internal/features/posts/transport/ws"
 	users_postgres_repository "github.com/Rics69/x-net/internal/features/users/repository/postgres"
 	users_service "github.com/Rics69/x-net/internal/features/users/service"
 	users_transport_http "github.com/Rics69/x-net/internal/features/users/transport/http"
@@ -88,10 +90,19 @@ func main() {
 	authService := auth_service.NewAuthService(usersRepository, tokenManager)
 	authTransportHTTP := auth_transport_http.NewAuthHTTPHandler(authService, authConfig.CookieSecure)
 
+	logger.Debug("initializing websocket hub")
+
+	wsHub := core_ws.NewHub(logger)
+	wsTransportHTTP := core_ws.NewWSHTTPHandler(wsHub, authMiddleware)
+
+	// хаб живёт столько же, сколько приложение: по ctx (SIGINT/SIGTERM) закроет всех клиентов
+	go wsHub.Run(ctx)
+
 	logger.Debug("initializing feature", zap.String("feature", "posts"))
 
 	postsRepository := posts_postgres_repository.NewPostsRepository(db)
-	postsService := posts_service.NewPostsService(postsRepository)
+	postsEventsPublisher := posts_transport_ws.NewPostsEventsPublisher(wsHub)
+	postsService := posts_service.NewPostsService(postsRepository, postsEventsPublisher)
 	postsTransportHTTP := posts_transport_http.NewPostsHTTPHandler(postsService, authMiddleware)
 
 	logger.Debug("initializing HTTP server")
@@ -110,6 +121,7 @@ func main() {
 	apiVersionRouter.RegisterRoutes(usersTransportHTTP.Routes()...)
 	apiVersionRouter.RegisterRoutes(authTransportHTTP.Routes()...)
 	apiVersionRouter.RegisterRoutes(postsTransportHTTP.Routes()...)
+	apiVersionRouter.RegisterRoutes(wsTransportHTTP.Routes()...)
 
 	httpServer.RegisterAPIRouters(apiVersionRouter)
 
