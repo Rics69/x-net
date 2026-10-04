@@ -20,6 +20,7 @@ type GetUsersResponse []UserDTOResponse
 // @Produce json
 // @Success 200 {object} GetUsersResponse "Успешное получение списка пользователей"
 // @Failure 400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure 401 {object} core_http_response.ErrorResponse "Unauthorized"
 // @Failure 500 {object} core_http_response.ErrorResponse "Internal server error"
 // @Router /users [get]
 func (u *UsersHTTPHandler) GetUsers(rw http.ResponseWriter, r *http.Request) {

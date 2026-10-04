@@ -71,6 +71,13 @@ func (l *gormLogger) Trace(
 	}
 }
 
+// GORM по умолчанию подставляет значения прямо в SQL для лога, и туда утекает
+// всё подряд: хеши паролей, тексты постов, телефоны. Возвращая nil вместо params,
+// получаем в логе SQL с плейсхолдерами ($1, $2 ...) - структура запроса видна, данные нет
+func (l *gormLogger) ParamsFilter(_ context.Context, sql string, _ ...any) (string, []any) {
+	return sql, nil
+}
+
 func (l *gormLogger) fromContext(ctx context.Context) *core_logger.Logger {
 	return core_logger.FromContextOr(ctx, l.log)
 }

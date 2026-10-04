@@ -3,35 +3,72 @@ package domain
 import (
 	"fmt"
 	"regexp"
+	"time"
 
 	core_errors "github.com/Rics69/x-net/internal/core/errors"
 )
 
 // компилим один раз на старте, а не на каждый Validate()
-var phoneNumberRegexp = regexp.MustCompile(`^\+[0-9]{9,14}$`)
+var (
+	phoneNumberRegexp = regexp.MustCompile(`^\+[0-9]{9,14}$`)
+	usernameRegexp    = regexp.MustCompile(`^[a-zA-Z0-9_]{3,32}$`)
+)
 
 type User struct {
 	ID      int
 	Version int
 
+	Username    string
 	FullName    string
 	PhoneNumber *string
+	CreatedAt   time.Time
+
+	// только хеш, сам пароль дальше сервиса auth не уходит.
+	// В DTO ответов это поле не попадает
+	PasswordHash string
 }
 
-func NewUser(id int, version int, fullname string, phoneNumber *string) User {
+func NewUser(
+	id int,
+	version int,
+	username string,
+	fullname string,
+	phoneNumber *string,
+	createdAt time.Time,
+	passwordHash string,
+) User {
 	return User{
-		ID:          id,
-		Version:     version,
-		FullName:    fullname,
-		PhoneNumber: phoneNumber,
+		ID:           id,
+		Version:      version,
+		Username:     username,
+		FullName:     fullname,
+		PhoneNumber:  phoneNumber,
+		CreatedAt:    createdAt,
+		PasswordHash: passwordHash,
 	}
 }
 
-func NewUserUnitialized(fullName string, phoneNumber *string) User {
-	return NewUser(UnitializedID, UnitializedVersion, fullName, phoneNumber)
+// PasswordHash не принимаем: его проставляет сервис auth после валидации и хеширования пароля
+func NewUserUnitialized(username string, fullName string, phoneNumber *string) User {
+	return NewUser(
+		UnitializedID,
+		UnitializedVersion,
+		username,
+		fullName,
+		phoneNumber,
+		time.Now(),
+		"",
+	)
 }
 
 func (u *User) Validate() error {
+	if !usernameRegexp.MatchString(u.Username) {
+		return fmt.Errorf(
+			"invalid `Username`: must be 3-32 symbols of latin letters, digits or '_': %w",
+			core_errors.ErrInvalidArgument,
+		)
+	}
+
 	fullNameLength := len([]rune(u.FullName))
 	if fullNameLength < 3 || fullNameLength > 100 {
 		return fmt.Errorf("invalid `FullName` len: %d: %w", fullNameLength, core_errors.ErrInvalidArgument)

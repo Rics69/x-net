@@ -15,6 +15,124 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "Проверка username/пароля. При успехе выставляется httpOnly cookie ` + "`" + `access_token` + "`" + `,\nпосле чего защищённые ручки (в т.ч. из этого Swagger UI) работают автоматически",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Вход",
+                "parameters": [
+                    {
+                        "description": "Login тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный вход",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid username or password",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "description": "Сбрасывает cookie ` + "`" + `access_token` + "`" + `. Авторизация не требуется: выйти можно и с протухшим токеном",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Выход",
+                "responses": {
+                    "204": {
+                        "description": "Успешный выход"
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Создание нового пользователя. При успехе сразу выставляется httpOnly cookie ` + "`" + `access_token` + "`" + `",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Регистрация",
+                "parameters": [
+                    {
+                        "description": "Register тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешно зарегистрированный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_auth_transport_http.RegisterResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Username already taken",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "description": "Просмотр списка пользователей с опциональной пагинацией",
@@ -55,6 +173,50 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "get": {
+                "description": "Получение профиля авторизованного пользователя (по access_token из cookie)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Текущий пользователь",
+                "responses": {
+                    "200": {
+                        "description": "Текущий пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_users_transport_http.GetMeResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -63,8 +225,38 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
-                "description": "Создать нового пользователя в системе",
+            "delete": {
+                "description": "Удаление авторизованного пользователя. Кука при этом не чистится - после удаления фронт должен вызвать /auth/logout",
+                "tags": [
+                    "users"
+                ],
+                "summary": "Удаление своего аккаунта",
+                "responses": {
+                    "204": {
+                        "description": "Успешное удаление пользователя"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Изменение профиля авторизованного пользователя\n### Логика обновления полей (Three-state logic):\n1. **Поле не передано**: ` + "`" + `phone_number` + "`" + `игнорируется, значение в БД не меняется\n2. **Явно передано значение**: ` + "`" + `\"phone_number\": \"+79998887766\"` + "`" + ` - устанавливает новый номер телефона\n3 . **Передан null**: ` + "`" + `\"phone_number\": null` + "`" + ` - очищает поле в БД (set to NULL)\nОграничения: ` + "`" + `full_name` + "`" + ` не может быть выставлен как NULL",
                 "consumes": [
                     "application/json"
                 ],
@@ -74,27 +266,45 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Создать пользователя",
+                "summary": "Изменение своего профиля",
                 "parameters": [
                     {
-                        "description": "CreateUser тело запроса",
+                        "description": "PatchUser тело запроса",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_features_users_transport_http.CreateUserRequest"
+                            "$ref": "#/definitions/internal_features_users_transport_http.PatchUserRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Успешно созданный пользователь",
+                    "200": {
+                        "description": "Успешно измененный пользователь",
                         "schema": {
-                            "$ref": "#/definitions/internal_features_users_transport_http.CreateUserResponse"
+                            "$ref": "#/definitions/internal_features_users_transport_http.PatchUserResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
                         }
@@ -140,110 +350,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
                         }
                     },
-                    "404": {
-                        "description": "User not found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Удаление существующего в системе пользователя по его id",
-                "tags": [
-                    "users"
-                ],
-                "summary": "Удаление пользователя",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "ID удаляемого пользователя",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Успешное удаление пользователя"
-                    },
-                    "400": {
-                        "description": "Bad request",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "User not found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Изменение информации об уже существующем в системе пользователе\n### Логика обновления полей (Three-state logic):\n1. **Поле не передано**: ` + "`" + `phone_number` + "`" + `игнорируется, значение в БД не меняется\n2. **Явно передано значение**: ` + "`" + `\"phone_number\": \"+79998887766\"` + "`" + ` - устанавливает новый номер телефона\n3 . **Передан null**: ` + "`" + `\"phone_number\": null` + "`" + ` - очищает поле в БД (set to NULL)\nОграничения: ` + "`" + `full_name` + "`" + ` не может быть выставлен как NULL",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Изменение пользователя",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "ID изменяемого пользователя",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "PatchUser тело запроса",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_users_transport_http.PatchUserRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Успешно измененный пользователь",
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_users_transport_http.PatchUserResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "User not found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
                         }
@@ -272,10 +386,50 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_features_users_transport_http.CreateUserRequest": {
+        "internal_features_auth_transport_http.LoginRequest": {
             "type": "object",
             "required": [
-                "full_name"
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "example": "supersecret"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "ivan_ivanov"
+                }
+            }
+        },
+        "internal_features_auth_transport_http.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-10-04T12:00:00Z"
+                },
+                "full_name": {
+                    "type": "string",
+                    "example": "Ivan Ivanov"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "username": {
+                    "type": "string",
+                    "example": "ivan_ivanov"
+                }
+            }
+        },
+        "internal_features_auth_transport_http.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "full_name",
+                "password",
+                "username"
             ],
             "properties": {
                 "full_name": {
@@ -284,17 +438,54 @@ const docTemplate = `{
                     "minLength": 3,
                     "example": "Ivan Ivanov"
                 },
+                "password": {
+                    "type": "string",
+                    "maxLength": 72,
+                    "minLength": 8,
+                    "example": "supersecret"
+                },
                 "phone_number": {
                     "type": "string",
                     "maxLength": 15,
                     "minLength": 10,
                     "example": "+79999998877"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 3,
+                    "example": "ivan_ivanov"
                 }
             }
         },
-        "internal_features_users_transport_http.CreateUserResponse": {
+        "internal_features_auth_transport_http.RegisterResponse": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-10-04T12:00:00Z"
+                },
+                "full_name": {
+                    "type": "string",
+                    "example": "Ivan Ivanov"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "username": {
+                    "type": "string",
+                    "example": "ivan_ivanov"
+                }
+            }
+        },
+        "internal_features_users_transport_http.GetMeResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-10-04T12:00:00Z"
+                },
                 "full_name": {
                     "type": "string",
                     "example": "Ivan Ivanov"
@@ -305,7 +496,11 @@ const docTemplate = `{
                 },
                 "phone_number": {
                     "type": "string",
-                    "example": "+79999998877 "
+                    "example": "+79999998877"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "ivan_ivanov"
                 },
                 "version": {
                     "type": "integer",
@@ -316,6 +511,10 @@ const docTemplate = `{
         "internal_features_users_transport_http.GetUserResponse": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-10-04T12:00:00Z"
+                },
                 "full_name": {
                     "type": "string",
                     "example": "Ivan Ivanov"
@@ -326,7 +525,11 @@ const docTemplate = `{
                 },
                 "phone_number": {
                     "type": "string",
-                    "example": "+79999998877 "
+                    "example": "+79999998877"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "ivan_ivanov"
                 },
                 "version": {
                     "type": "integer",
@@ -350,6 +553,10 @@ const docTemplate = `{
         "internal_features_users_transport_http.PatchUserResponse": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-10-04T12:00:00Z"
+                },
                 "full_name": {
                     "type": "string",
                     "example": "Ivan Ivanov"
@@ -360,7 +567,11 @@ const docTemplate = `{
                 },
                 "phone_number": {
                     "type": "string",
-                    "example": "+79999998877 "
+                    "example": "+79999998877"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "ivan_ivanov"
                 },
                 "version": {
                     "type": "integer",
@@ -371,6 +582,10 @@ const docTemplate = `{
         "internal_features_users_transport_http.UserDTOResponse": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-10-04T12:00:00Z"
+                },
                 "full_name": {
                     "type": "string",
                     "example": "Ivan Ivanov"
@@ -381,7 +596,11 @@ const docTemplate = `{
                 },
                 "phone_number": {
                     "type": "string",
-                    "example": "+79999998877 "
+                    "example": "+79999998877"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "ivan_ivanov"
                 },
                 "version": {
                     "type": "integer",

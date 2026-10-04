@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	core_auth "github.com/Rics69/x-net/internal/core/auth"
 	"github.com/Rics69/x-net/internal/core/domain"
 	core_logger "github.com/Rics69/x-net/internal/core/logger"
 	core_http_request "github.com/Rics69/x-net/internal/core/transport/http/request"
@@ -48,8 +49,8 @@ func (r *PatchUserRequest) Validate() error {
 type PatchUserResponse UserDTOResponse
 
 // PatchUser godoc
-// @Summary Изменение пользователя
-// @Description Изменение информации об уже существующем в системе пользователе
+// @Summary Изменение своего профиля
+// @Description Изменение профиля авторизованного пользователя
 // @Description ### Логика обновления полей (Three-state logic):
 // @Description 1. **Поле не передано**: `phone_number`игнорируется, значение в БД не меняется
 // @Description 2. **Явно передано значение**: `"phone_number": "+79998887766"` - устанавливает новый номер телефона
@@ -58,24 +59,24 @@ type PatchUserResponse UserDTOResponse
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param id path int true "ID изменяемого пользователя"
 // @Param request body PatchUserRequest true "PatchUser тело запроса"
 // @Success 200 {object} PatchUserResponse "Успешно измененный пользователь"
 // @Failure 400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure 401 {object} core_http_response.ErrorResponse "Unauthorized"
 // @Failure 404 {object} core_http_response.ErrorResponse "User not found"
 // @Failure 409 {object} core_http_response.ErrorResponse "Conflict"
 // @Failure 500 {object} core_http_response.ErrorResponse "Internal server error"
-// @Router /users/{id} [patch]
+// @Router /users/me [patch]
 func (u *UsersHTTPHandler) PatchUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseHandler(log, rw)
 
-	userID, err := core_http_request.GetIntPathValue(r, "id")
+	userID, err := core_auth.UserIDFromContext(ctx)
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err,
-			"failed to get userID path value",
+			"failed to get userID from context",
 		)
 
 		return

@@ -1,6 +1,10 @@
 package users_postgres_repository
 
-import "github.com/Rics69/x-net/internal/core/domain"
+import (
+	"time"
+
+	"github.com/Rics69/x-net/internal/core/domain"
+)
 
 type UserModel struct {
 	ID int `gorm:"primaryKey"`
@@ -9,8 +13,11 @@ type UserModel struct {
 	// Значение должно совпадать с DEFAULT в миграции
 	Version int `gorm:"default:1"`
 
-	FullName    string
-	PhoneNumber *string
+	Username     string
+	FullName     string
+	PhoneNumber  *string
+	CreatedAt    time.Time
+	PasswordHash string
 }
 
 // схема не public, поэтому имя таблицы задаём явно,
@@ -23,8 +30,11 @@ func userDomainFromModel(user UserModel) domain.User {
 	return domain.NewUser(
 		user.ID,
 		user.Version,
+		user.Username,
 		user.FullName,
 		user.PhoneNumber,
+		user.CreatedAt,
+		user.PasswordHash,
 	)
 }
 

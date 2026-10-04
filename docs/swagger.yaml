@@ -9,23 +9,80 @@ definitions:
         example: short message
         type: string
     type: object
-  internal_features_users_transport_http.CreateUserRequest:
+  internal_features_auth_transport_http.LoginRequest:
+    properties:
+      password:
+        example: supersecret
+        type: string
+      username:
+        example: ivan_ivanov
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  internal_features_auth_transport_http.LoginResponse:
+    properties:
+      created_at:
+        example: "2026-10-04T12:00:00Z"
+        type: string
+      full_name:
+        example: Ivan Ivanov
+        type: string
+      id:
+        example: 1
+        type: integer
+      username:
+        example: ivan_ivanov
+        type: string
+    type: object
+  internal_features_auth_transport_http.RegisterRequest:
     properties:
       full_name:
         example: Ivan Ivanov
         maxLength: 100
         minLength: 3
         type: string
+      password:
+        example: supersecret
+        maxLength: 72
+        minLength: 8
+        type: string
       phone_number:
         example: "+79999998877"
         maxLength: 15
         minLength: 10
         type: string
+      username:
+        example: ivan_ivanov
+        maxLength: 32
+        minLength: 3
+        type: string
     required:
     - full_name
+    - password
+    - username
     type: object
-  internal_features_users_transport_http.CreateUserResponse:
+  internal_features_auth_transport_http.RegisterResponse:
     properties:
+      created_at:
+        example: "2026-10-04T12:00:00Z"
+        type: string
+      full_name:
+        example: Ivan Ivanov
+        type: string
+      id:
+        example: 1
+        type: integer
+      username:
+        example: ivan_ivanov
+        type: string
+    type: object
+  internal_features_users_transport_http.GetMeResponse:
+    properties:
+      created_at:
+        example: "2026-10-04T12:00:00Z"
+        type: string
       full_name:
         example: Ivan Ivanov
         type: string
@@ -33,7 +90,10 @@ definitions:
         example: 1
         type: integer
       phone_number:
-        example: '+79999998877 '
+        example: "+79999998877"
+        type: string
+      username:
+        example: ivan_ivanov
         type: string
       version:
         example: 3
@@ -41,6 +101,9 @@ definitions:
     type: object
   internal_features_users_transport_http.GetUserResponse:
     properties:
+      created_at:
+        example: "2026-10-04T12:00:00Z"
+        type: string
       full_name:
         example: Ivan Ivanov
         type: string
@@ -48,7 +111,10 @@ definitions:
         example: 1
         type: integer
       phone_number:
-        example: '+79999998877 '
+        example: "+79999998877"
+        type: string
+      username:
+        example: ivan_ivanov
         type: string
       version:
         example: 3
@@ -65,6 +131,9 @@ definitions:
     type: object
   internal_features_users_transport_http.PatchUserResponse:
     properties:
+      created_at:
+        example: "2026-10-04T12:00:00Z"
+        type: string
       full_name:
         example: Ivan Ivanov
         type: string
@@ -72,7 +141,10 @@ definitions:
         example: 1
         type: integer
       phone_number:
-        example: '+79999998877 '
+        example: "+79999998877"
+        type: string
+      username:
+        example: ivan_ivanov
         type: string
       version:
         example: 3
@@ -80,6 +152,9 @@ definitions:
     type: object
   internal_features_users_transport_http.UserDTOResponse:
     properties:
+      created_at:
+        example: "2026-10-04T12:00:00Z"
+        type: string
       full_name:
         example: Ivan Ivanov
         type: string
@@ -87,7 +162,10 @@ definitions:
         example: 1
         type: integer
       phone_number:
-        example: '+79999998877 '
+        example: "+79999998877"
+        type: string
+      username:
+        example: ivan_ivanov
         type: string
       version:
         example: 3
@@ -100,6 +178,87 @@ info:
   title: X-Chat API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Проверка username/пароля. При успехе выставляется httpOnly cookie `access_token`,
+        после чего защищённые ручки (в т.ч. из этого Swagger UI) работают автоматически
+      parameters:
+      - description: Login тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный вход
+          schema:
+            $ref: '#/definitions/internal_features_auth_transport_http.LoginResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+        "401":
+          description: Invalid username or password
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+      summary: Вход
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      description: 'Сбрасывает cookie `access_token`. Авторизация не требуется: выйти
+        можно и с протухшим токеном'
+      responses:
+        "204":
+          description: Успешный выход
+      summary: Выход
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создание нового пользователя. При успехе сразу выставляется httpOnly
+        cookie `access_token`
+      parameters:
+      - description: Register тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_auth_transport_http.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешно зарегистрированный пользователь
+          schema:
+            $ref: '#/definitions/internal_features_auth_transport_http.RegisterResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+        "409":
+          description: Username already taken
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+      summary: Регистрация
+      tags:
+      - auth
   /users:
     get:
       description: Просмотр списка пользователей с опциональной пагинацией
@@ -125,6 +284,10 @@ paths:
           description: Bad request
           schema:
             $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -132,62 +295,7 @@ paths:
       summary: Список пользователей
       tags:
       - users
-    post:
-      consumes:
-      - application/json
-      description: Создать нового пользователя в системе
-      parameters:
-      - description: CreateUser тело запроса
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/internal_features_users_transport_http.CreateUserRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Успешно созданный пользователь
-          schema:
-            $ref: '#/definitions/internal_features_users_transport_http.CreateUserResponse'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
-      summary: Создать пользователя
-      tags:
-      - users
   /users/{id}:
-    delete:
-      description: Удаление существующего в системе пользователя по его id
-      parameters:
-      - description: ID удаляемого пользователя
-        in: path
-        name: id
-        required: true
-        type: integer
-      responses:
-        "204":
-          description: Успешное удаление пользователя
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
-        "404":
-          description: User not found
-          schema:
-            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
-      summary: Удаление пользователя
-      tags:
-      - users
     get:
       description: Получение конкретного пользователя по его ID
       parameters:
@@ -207,6 +315,10 @@ paths:
           description: Bad request
           schema:
             $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
         "404":
           description: User not found
           schema:
@@ -218,22 +330,64 @@ paths:
       summary: Получение пользователя
       tags:
       - users
+  /users/me:
+    delete:
+      description: Удаление авторизованного пользователя. Кука при этом не чистится
+        - после удаления фронт должен вызвать /auth/logout
+      responses:
+        "204":
+          description: Успешное удаление пользователя
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+      summary: Удаление своего аккаунта
+      tags:
+      - users
+    get:
+      description: Получение профиля авторизованного пользователя (по access_token
+        из cookie)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Текущий пользователь
+          schema:
+            $ref: '#/definitions/internal_features_users_transport_http.GetMeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+      summary: Текущий пользователь
+      tags:
+      - users
     patch:
       consumes:
       - application/json
       description: |-
-        Изменение информации об уже существующем в системе пользователе
+        Изменение профиля авторизованного пользователя
         ### Логика обновления полей (Three-state logic):
         1. **Поле не передано**: `phone_number`игнорируется, значение в БД не меняется
         2. **Явно передано значение**: `"phone_number": "+79998887766"` - устанавливает новый номер телефона
         3 . **Передан null**: `"phone_number": null` - очищает поле в БД (set to NULL)
         Ограничения: `full_name` не может быть выставлен как NULL
       parameters:
-      - description: ID изменяемого пользователя
-        in: path
-        name: id
-        required: true
-        type: integer
       - description: PatchUser тело запроса
         in: body
         name: request
@@ -251,6 +405,10 @@ paths:
           description: Bad request
           schema:
             $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
         "404":
           description: User not found
           schema:
@@ -263,7 +421,7 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse'
-      summary: Изменение пользователя
+      summary: Изменение своего профиля
       tags:
       - users
 swagger: "2.0"
