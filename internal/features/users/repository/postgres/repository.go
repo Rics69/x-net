@@ -1,13 +1,13 @@
 package users_postgres_repository
 
-import core_postgres_pool "github.com/Rics69/x-chat/internal/core/repository/postgres/pool"
+import core_postgres_gorm "github.com/Rics69/x-net/internal/core/repository/postgres/gorm"
 
 type UsersRepository struct {
-	pool core_postgres_pool.Pool
+	db *core_postgres_gorm.DB
 }
 
-func NewUsersRepository(pool core_postgres_pool.Pool) *UsersRepository {
+func NewUsersRepository(db *core_postgres_gorm.DB) *UsersRepository {
 	return &UsersRepository{
-		pool: pool,
+		db: db,
 	}
 }

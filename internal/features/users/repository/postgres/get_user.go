@@ -5,34 +5,25 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Rics69/x-chat/internal/core/domain"
-	core_errors "github.com/Rics69/x-chat/internal/core/errors"
-	core_postgres_pool "github.com/Rics69/x-chat/internal/core/repository/postgres/pool"
+	"github.com/Rics69/x-net/internal/core/domain"
+	core_errors "github.com/Rics69/x-net/internal/core/errors"
+	"gorm.io/gorm"
 )
 
 func (r *UsersRepository) GetUser(ctx context.Context, id int) (domain.User, error) {
-	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
+	ctx, cancel := context.WithTimeout(ctx, r.db.OpTimeout())
 	defer cancel()
-
-	query := `
-	SELECT id, version, full_name, phone_number
-	FROM xchat.users
-	WHERE id=$1;
-	`
-
-	row := r.pool.QueryRow(ctx, query, id)
 
 	var userModel UserModel
 
-	err := row.Scan(
-		&userModel.ID,
-		&userModel.Version,
-		&userModel.FullName,
-		&userModel.PhoneNumber,
-	)
-
+	// Take, а не First: First добавляет ORDER BY id, для поиска по PK это лишнее.
+	// ErrRecordNotFound кидают только First/Take/Last, Find на пустой выборке ошибку не вернёт
+	err := r.db.WithContext(ctx).
+		Where("id = ?", id).
+		Take(&userModel).
+		Error
 	if err != nil {
-		if errors.Is(err, core_postgres_pool.ErrNoRows) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return domain.User{}, fmt.Errorf(
 				"user with id='%d': %w",
 				id,
@@ -40,15 +31,8 @@ func (r *UsersRepository) GetUser(ctx context.Context, id int) (domain.User, err
 			)
 		}
 
-		return domain.User{}, fmt.Errorf("scan error: %w", err)
+		return domain.User{}, fmt.Errorf("select user: %w", err)
 	}
 
-	userDomain := domain.NewUser(
-		userModel.ID,
-		userModel.Version,
-		userModel.FullName,
-		userModel.PhoneNumber,
-	)
-
-	return userDomain, nil
+	return userDomainFromModel(userModel), nil
 }

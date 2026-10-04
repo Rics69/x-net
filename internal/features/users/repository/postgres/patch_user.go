@@ -2,67 +2,43 @@ package users_postgres_repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/Rics69/x-chat/internal/core/domain"
-	core_errors "github.com/Rics69/x-chat/internal/core/errors"
-	core_postgres_pool "github.com/Rics69/x-chat/internal/core/repository/postgres/pool"
+	"github.com/Rics69/x-net/internal/core/domain"
+	core_errors "github.com/Rics69/x-net/internal/core/errors"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func (r *UsersRepository) PatchUser(ctx context.Context, id int, user domain.User) (domain.User, error) {
-	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
+	ctx, cancel := context.WithTimeout(ctx, r.db.OpTimeout())
 	defer cancel()
 
-	query := `
-	UPDATE xchat.users
-	SET
-		full_name=$1,
-		phone_number=$2,
-		version=version+1
-	WHERE id=$3 AND version=$4
-	RETURNING
-		id,
-		version,
-		full_name,
-		phone_number;
-	`
-
-	row := r.pool.QueryRow(
-		ctx,
-		query,
-		user.FullName,
-		user.PhoneNumber,
-		id,
-		user.Version,
-	)
-
 	var userModel UserModel
-	err := row.Scan(
-		&userModel.ID,
-		&userModel.Version,
-		&userModel.FullName,
-		&userModel.PhoneNumber,
-	)
 
-	if err != nil {
-		if errors.Is(err, core_postgres_pool.ErrNoRows) {
-			return domain.User{}, fmt.Errorf(
-				"user with id='%d' concurrently accessed: %w",
-				id,
-				core_errors.ErrConflict,
-			)
-		}
-
-		return domain.User{}, fmt.Errorf("scan error: %w", err)
+	// Updates через map, а не через структуру: со структурой GORM пропускает нулевые поля,
+	// и phone_number=nil просто не попал бы в UPDATE (нельзя было бы очистить телефон).
+	// Optimistic lock: WHERE version = старая версия, если 0 строк - кто-то обновил раньше нас
+	result := r.db.WithContext(ctx).
+		Model(&userModel).
+		Clauses(clause.Returning{}).
+		Where("id = ? AND version = ?", id, user.Version).
+		Updates(map[string]any{
+			"full_name":    user.FullName,
+			"phone_number": user.PhoneNumber,
+			"version":      gorm.Expr("version + 1"),
+		})
+	if result.Error != nil {
+		return domain.User{}, fmt.Errorf("update user: %w", result.Error)
 	}
 
-	userDomain := domain.NewUser(
-		userModel.ID,
-		userModel.Version,
-		userModel.FullName,
-		userModel.PhoneNumber,
-	)
+	if result.RowsAffected == 0 {
+		return domain.User{}, fmt.Errorf(
+			"user with id='%d' concurrently accessed: %w",
+			id,
+			core_errors.ErrConflict,
+		)
+	}
 
-	return userDomain, nil
+	return userDomainFromModel(userModel), nil
 }

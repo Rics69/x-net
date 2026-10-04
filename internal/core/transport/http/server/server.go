@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	core_logger "github.com/Rics69/x-chat/internal/core/logger"
-	core_http_middleware "github.com/Rics69/x-chat/internal/core/transport/http/middleware"
+	core_logger "github.com/Rics69/x-net/internal/core/logger"
+	core_http_middleware "github.com/Rics69/x-net/internal/core/transport/http/middleware"
 	"go.uber.org/zap"
 
 	httpSwagger "github.com/swaggo/http-swagger/v2"

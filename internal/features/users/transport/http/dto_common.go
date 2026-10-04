@@ -1,6 +1,6 @@
 package users_transport_http
 
-import "github.com/Rics69/x-chat/internal/core/domain"
+import "github.com/Rics69/x-net/internal/core/domain"
 
 type UserDTOResponse struct {
 	ID          int     `json:"id" example:"1"`

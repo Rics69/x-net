@@ -1,4 +1,4 @@
-package core_pgx_pool
+package core_postgres_gorm
 
 import (
 	"fmt"
@@ -14,6 +14,12 @@ type Config struct {
 	Password string        `envconfig:"PASSWORD" required:"true"`
 	Database string        `envconfig:"DB" required:"true"`
 	Timeout  time.Duration `envconfig:"TIMEOUT" required:"true"`
+
+	// у database/sql по умолчанию MaxOpenConns не ограничен (в отличие от pgxpool),
+	// под нагрузкой можно упереться в max_connections постгреса
+	MaxOpenConns    int           `envconfig:"MAX_OPEN_CONNS" default:"10"`
+	MaxIdleConns    int           `envconfig:"MAX_IDLE_CONNS" default:"5"`
+	ConnMaxLifetime time.Duration `envconfig:"CONN_MAX_LIFETIME" default:"30m"`
 }
 
 func NewConfig() (Config, error) {
@@ -28,7 +34,7 @@ func NewConfig() (Config, error) {
 func NewConfigMust() Config {
 	config, err := NewConfig()
 	if err != nil {
-		err = fmt.Errorf("get Postgres connection pool config: %w", err)
+		err = fmt.Errorf("get Postgres GORM config: %w", err)
 		panic(err)
 	}
 

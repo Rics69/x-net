@@ -1,4 +1,4 @@
-module github.com/Rics69/x-chat
+module github.com/Rics69/x-net
 
 go 1.26.5
 
@@ -8,6 +8,8 @@ require (
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	go.uber.org/zap v1.28.0
+	gorm.io/driver/postgres v1.6.3
+	gorm.io/gorm v1.31.2
 )
 
 require (

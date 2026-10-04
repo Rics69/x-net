@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Rics69/x-chat/internal/core/domain"
+	"github.com/Rics69/x-net/internal/core/domain"
 )
 
 func (s *UsersService) PatchUser(ctx context.Context, id int, patch domain.UserPatch) (domain.User, error) {

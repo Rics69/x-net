@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	core_errors "github.com/Rics69/x-chat/internal/core/errors"
+	core_errors "github.com/Rics69/x-net/internal/core/errors"
 )
 
 // компилим один раз на старте, а не на каждый Validate()

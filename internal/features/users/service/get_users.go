@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Rics69/x-chat/internal/core/domain"
-	core_errors "github.com/Rics69/x-chat/internal/core/errors"
+	"github.com/Rics69/x-net/internal/core/domain"
+	core_errors "github.com/Rics69/x-net/internal/core/errors"
 )
 
 func (s *UsersService) GetUsers(ctx context.Context, limit *int, offset *int) ([]domain.User, error) {

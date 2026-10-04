@@ -8,19 +8,19 @@ import (
 	"syscall"
 	"time"
 
-	core_config "github.com/Rics69/x-chat/internal/core/config"
-	core_logger "github.com/Rics69/x-chat/internal/core/logger"
-	core_pgx_pool "github.com/Rics69/x-chat/internal/core/repository/postgres/pool/pgx"
-	core_http_middleware "github.com/Rics69/x-chat/internal/core/transport/http/middleware"
-	core_http_server "github.com/Rics69/x-chat/internal/core/transport/http/server"
-	users_postgres_repository "github.com/Rics69/x-chat/internal/features/users/repository/postgres"
-	users_service "github.com/Rics69/x-chat/internal/features/users/service"
-	users_transport_http "github.com/Rics69/x-chat/internal/features/users/transport/http"
+	core_config "github.com/Rics69/x-net/internal/core/config"
+	core_logger "github.com/Rics69/x-net/internal/core/logger"
+	core_postgres_gorm "github.com/Rics69/x-net/internal/core/repository/postgres/gorm"
+	core_http_middleware "github.com/Rics69/x-net/internal/core/transport/http/middleware"
+	core_http_server "github.com/Rics69/x-net/internal/core/transport/http/server"
+	users_postgres_repository "github.com/Rics69/x-net/internal/features/users/repository/postgres"
+	users_service "github.com/Rics69/x-net/internal/features/users/service"
+	users_transport_http "github.com/Rics69/x-net/internal/features/users/transport/http"
 	"go.uber.org/zap"
 
 	// docs генерится через `make swagger-gen`, в init() регистрирует спеку в swag,
 	// откуда её потом читает httpSwagger.Handler
-	_ "github.com/Rics69/x-chat/docs"
+	_ "github.com/Rics69/x-net/docs"
 )
 
 // @title X-Chat API
@@ -49,17 +49,21 @@ func main() {
 
 	logger.Debug("application time zone", zap.Any("zone", time.Local))
 
-	logger.Debug("initializing postgres connection pool")
-	pool, err := core_pgx_pool.NewPool(ctx, core_pgx_pool.NewConfigMust())
+	logger.Debug("initializing postgres GORM connection")
+	db, err := core_postgres_gorm.NewDB(ctx, core_postgres_gorm.NewConfigMust(), logger)
 	if err != nil {
-		logger.Fatal("failed to init postgres connection pool", zap.Error(err))
+		logger.Fatal("failed to init postgres GORM connection", zap.Error(err))
 	}
 
-	defer pool.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			logger.Error("failed to close postgres GORM connection", zap.Error(err))
+		}
+	}()
 
 	logger.Debug("initializing feature", zap.String("feature", "users"))
 
-	usersRepository := users_postgres_repository.NewUsersRepository(pool)
+	usersRepository := users_postgres_repository.NewUsersRepository(db)
 	usersService := users_service.NewUsersService(usersRepository)
 	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(usersService)
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/Rics69/x-chat/internal/core/domain"
-	core_http_server "github.com/Rics69/x-chat/internal/core/transport/http/server"
+	"github.com/Rics69/x-net/internal/core/domain"
+	core_http_server "github.com/Rics69/x-net/internal/core/transport/http/server"
 )
 
 type UsersHTTPHandler struct {

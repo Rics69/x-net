@@ -40,6 +40,17 @@ func FromContext(ctx context.Context) *Logger {
 	return log
 }
 
+// в отличие от FromContext не паникует: нужен там, где ctx может быть без логгера
+// (например запросы к БД на старте приложения, до HTTP middleware)
+func FromContextOr(ctx context.Context, def *Logger) *Logger {
+	log, ok := ctx.Value(key).(*Logger)
+	if !ok {
+		return def
+	}
+
+	return log
+}
+
 func NewLogger(config Config) (*Logger, error) {
 	zapLvl := zap.NewAtomicLevel()
 	if err := zapLvl.UnmarshalText([]byte(config.Level)); err != nil {

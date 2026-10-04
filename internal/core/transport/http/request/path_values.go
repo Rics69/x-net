@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	core_errors "github.com/Rics69/x-chat/internal/core/errors"
+	core_errors "github.com/Rics69/x-net/internal/core/errors"
 )
 
 func GetIntPathValue(r *http.Request, key string) (int, error) {

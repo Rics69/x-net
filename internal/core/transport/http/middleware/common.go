@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	core_logger "github.com/Rics69/x-chat/internal/core/logger"
-	core_http_response "github.com/Rics69/x-chat/internal/core/transport/http/response"
+	core_logger "github.com/Rics69/x-net/internal/core/logger"
+	core_http_response "github.com/Rics69/x-net/internal/core/transport/http/response"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )

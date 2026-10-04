@@ -4,23 +4,22 @@ import (
 	"context"
 	"fmt"
 
-	core_errors "github.com/Rics69/x-chat/internal/core/errors"
+	core_errors "github.com/Rics69/x-net/internal/core/errors"
 )
 
 func (r *UsersRepository) DeleteUser(ctx context.Context, id int) error {
-	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
+	ctx, cancel := context.WithTimeout(ctx, r.db.OpTimeout())
 	defer cancel()
 
-	query := `
-	DELETE FROM xchat.users
-	WHERE id=$1;
-	`
-
-	cmdTag, err := r.pool.Exec(ctx, query, id)
-	if err != nil {
-		return fmt.Errorf("exec query: %w", err)
+	// UserModel не встраивает gorm.Model (нет DeletedAt), поэтому удаление настоящее, не soft delete
+	result := r.db.WithContext(ctx).
+		Where("id = ?", id).
+		Delete(&UserModel{})
+	if result.Error != nil {
+		return fmt.Errorf("delete user: %w", result.Error)
 	}
-	if cmdTag.RowsAffected() == 0 {
+
+	if result.RowsAffected == 0 {
 		return fmt.Errorf("user with id='%d': %w", id, core_errors.ErrNotFound)
 	}
 

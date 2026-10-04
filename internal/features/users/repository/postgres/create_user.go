@@ -4,39 +4,29 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Rics69/x-chat/internal/core/domain"
+	"github.com/Rics69/x-net/internal/core/domain"
+	"gorm.io/gorm/clause"
 )
 
 func (r *UsersRepository) CreateUser(ctx context.Context, user domain.User) (domain.User, error) {
-	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
+	ctx, cancel := context.WithTimeout(ctx, r.db.OpTimeout())
 	defer cancel()
 
-	query := `
-	INSERT INTO xchat.users (full_name, phone_number)
-	VALUES ($1, $2)
-	RETURNING id, version, full_name, phone_number;
-	`
-
-	row := r.pool.QueryRow(ctx, query, user.FullName, user.PhoneNumber)
-
-	var userModel UserModel
-	err := row.Scan(
-		&userModel.ID,
-		&userModel.Version,
-		&userModel.FullName,
-		&userModel.PhoneNumber,
-	)
-
-	if err != nil {
-		return domain.User{}, fmt.Errorf("scan error: %w", err)
+	// ID и Version из домена не переносим (там Unitialized = -1),
+	// иначе GORM вставит id=-1. Их проставит БД
+	userModel := UserModel{
+		FullName:    user.FullName,
+		PhoneNumber: user.PhoneNumber,
 	}
 
-	userDomain := domain.NewUser(
-		userModel.ID,
-		userModel.Version,
-		userModel.FullName,
-		userModel.PhoneNumber,
-	)
+	// RETURNING * - модель заполнится тем, что реально легло в таблицу
+	err := r.db.WithContext(ctx).
+		Clauses(clause.Returning{}).
+		Create(&userModel).
+		Error
+	if err != nil {
+		return domain.User{}, fmt.Errorf("insert user: %w", err)
+	}
 
-	return userDomain, nil
+	return userDomainFromModel(userModel), nil
 }

@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Rics69/x-chat/internal/core/domain"
-	core_logger "github.com/Rics69/x-chat/internal/core/logger"
-	core_http_request "github.com/Rics69/x-chat/internal/core/transport/http/request"
-	core_http_response "github.com/Rics69/x-chat/internal/core/transport/http/response"
-	core_http_types "github.com/Rics69/x-chat/internal/core/transport/http/types"
+	"github.com/Rics69/x-net/internal/core/domain"
+	core_logger "github.com/Rics69/x-net/internal/core/logger"
+	core_http_request "github.com/Rics69/x-net/internal/core/transport/http/request"
+	core_http_response "github.com/Rics69/x-net/internal/core/transport/http/response"
+	core_http_types "github.com/Rics69/x-net/internal/core/transport/http/types"
 )
 
 type PatchUserRequest struct {
