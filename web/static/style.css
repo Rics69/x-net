@@ -1,0 +1,430 @@
+@font-face {
+  font-family: "Onest";
+  src: url("/fonts/onest.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --paper: #eef2ef;
+  --surface: #f8faf8;
+  --ink: #17262b;
+  --muted: #5b6b6f;
+  --rule: #cdd7d3;
+  --signal: #0b7a64;
+  --signal-ink: #ffffff;
+  --fresh: #ffe47a;
+  --danger: #a4262c;
+
+  --radius-field: 10px;
+  --column: 38rem;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #121a1d;
+    --surface: #172226;
+    --ink: #e3ebe8;
+    --muted: #93a3a6;
+    --rule: #2b3a3e;
+    --signal: #3cc4a3;
+    --signal-ink: #062019;
+    --fresh: rgba(255, 228, 122, 0.3);
+    --danger: #ff8a8f;
+
+    color-scheme: dark;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1rem/1.5 "Onest", system-ui, sans-serif;
+  font-feature-settings: "tnum" 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+/* у полей своя рамка: кладём outline прямо на неё, иначе получается двойной контур */
+input:focus-visible,
+textarea:focus-visible {
+  outline-offset: -1px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.app {
+  max-width: var(--column);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ---------- кнопки ---------- */
+
+.btn-primary {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 20px;
+  background: var(--signal);
+  color: var(--signal-ink);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn-quiet {
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: transparent;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.btn-quiet:hover {
+  border-color: var(--muted);
+}
+
+/* ---------- вход / регистрация ---------- */
+
+.auth {
+  padding: 12vh 0 64px;
+}
+
+.auth-wordmark {
+  margin: 0;
+  font-size: clamp(3.5rem, 14vw, 5.5rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+}
+
+.auth-lead {
+  max-width: 26rem;
+  margin: 16px 0 40px;
+  color: var(--muted);
+  font-size: 1.0625rem;
+}
+
+.auth-switch {
+  display: flex;
+  gap: 24px;
+  max-width: 24rem;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.auth-switch button {
+  margin-bottom: -1px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-switch button[aria-selected="true"] {
+  border-bottom-color: var(--ink);
+  color: var(--ink);
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+  max-width: 24rem;
+}
+
+.auth-form .btn-primary {
+  justify-self: start;
+  margin-top: 4px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-field);
+  background: var(--surface);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.form-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.875rem;
+}
+
+/* ---------- шапка ---------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.wordmark {
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.signal::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.signal[data-status="live"]::before {
+  background: var(--signal);
+}
+
+.signal[data-status="reconnecting"]::before {
+  background: var(--danger);
+}
+
+/* мигает только когда реально пришло событие, а не постоянно */
+.signal.is-ping::before {
+  animation: ping 0.9s ease-out;
+}
+
+@keyframes ping {
+  0% { box-shadow: 0 0 0 0 var(--signal); }
+  100% { box-shadow: 0 0 0 9px transparent; }
+}
+
+.me {
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---------- новый пост ---------- */
+
+.composer {
+  margin: 20px 0 24px;
+}
+
+.composer textarea {
+  display: block;
+  width: 100%;
+  min-height: 5.5rem;
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--surface);
+  font-size: 1.0625rem;
+  resize: vertical;
+}
+
+.composer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.counter {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.counter.is-over {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.composer .form-error {
+  margin-top: 8px;
+}
+
+/* ---------- лента ---------- */
+
+.feed {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+  list-style: none;
+}
+
+.post {
+  padding: 14px 0 16px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.post-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.post-name {
+  font-weight: 650;
+}
+
+.post-handle {
+  overflow: hidden;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.post-time {
+  flex: none;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.post-body {
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.post-delete {
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.post-delete:hover,
+.post-delete[data-armed="true"] {
+  color: var(--danger);
+}
+
+.post-delete[data-armed="true"] {
+  font-weight: 600;
+}
+
+/* пост пришёл по сокету: проводим "маркером" и даём ему выцвести.
+   box-shadow вылезает за края колонки, чтобы выделение было шире текста */
+.post.is-fresh {
+  animation: fresh 2.8s ease-out;
+}
+
+@keyframes fresh {
+  0%, 25% {
+    background: var(--fresh);
+    box-shadow: -10px 0 0 var(--fresh), 10px 0 0 var(--fresh);
+  }
+  100% {
+    background: transparent;
+    box-shadow: -10px 0 0 transparent, 10px 0 0 transparent;
+  }
+}
+
+.feed-empty {
+  margin: 0;
+  padding: 32px 0;
+  color: var(--muted);
+}
+
+.btn-more {
+  display: block;
+  margin: 24px auto 48px;
+}
+
+@media (max-width: 420px) {
+  .me {
+    display: none;
+  }
+
+  .topbar {
+    gap: 10px;
+  }
+
+  .signal {
+    margin-right: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post.is-fresh,
+  .signal.is-ping::before {
+    animation: none;
+  }
+
+  .post.is-fresh {
+    box-shadow: inset 3px 0 0 var(--fresh);
+  }
+}

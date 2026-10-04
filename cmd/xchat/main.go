@@ -24,6 +24,7 @@ import (
 	users_postgres_repository "github.com/Rics69/x-net/internal/features/users/repository/postgres"
 	users_service "github.com/Rics69/x-net/internal/features/users/service"
 	users_transport_http "github.com/Rics69/x-net/internal/features/users/transport/http"
+	"github.com/Rics69/x-net/web"
 	"go.uber.org/zap"
 
 	// docs генерится через `make swagger-gen`, в init() регистрирует спеку в swag,
@@ -126,6 +127,8 @@ func main() {
 	httpServer.RegisterAPIRouters(apiVersionRouter)
 
 	httpServer.RegisterSwagger()
+
+	httpServer.RegisterStatic(web.Handler())
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Error("HTTP server run error", zap.Error(err))

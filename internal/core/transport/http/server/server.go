@@ -52,6 +52,12 @@ func (s *HTTPServer) RegisterSwagger() {
 	)
 }
 
+// "/" в ServeMux ловит всё, что не совпало с более конкретными паттернами
+// (/api/v1/..., /swagger/...), поэтому статика не перекрывает API
+func (s *HTTPServer) RegisterStatic(handler http.Handler) {
+	s.mux.Handle("/", handler)
+}
+
 func (s *HTTPServer) Run(ctx context.Context) error {
 	mux := core_http_middleware.ChainMiddleware(s.mux, s.middleware...)
 

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>x-net</title>
+  <link rel="preload" href="/fonts/onest.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app">
+
+    <section class="auth" id="auth" hidden>
+      <h1 class="auth-wordmark">x-net</h1>
+      <p class="auth-lead">Общая лента: новые посты появляются у всех сразу, без перезагрузки.</p>
+
+      <div class="auth-switch" role="tablist" aria-label="Вход или регистрация">
+        <button type="button" role="tab" id="tab-login" data-mode="login" aria-selected="true">Вход</button>
+        <button type="button" role="tab" id="tab-register" data-mode="register" aria-selected="false">Регистрация</button>
+      </div>
+
+      <form class="auth-form" id="auth-form" novalidate>
+        <label class="field">
+          <span>Имя пользователя</span>
+          <input name="username" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+        </label>
+        <label class="field" data-only="register" hidden>
+          <span>Как вас показывать в ленте</span>
+          <input name="full_name" autocomplete="name">
+        </label>
+        <label class="field">
+          <span>Пароль</span>
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <p class="hint" data-only="register" hidden>Имя пользователя: латиница, цифры и _, от 3 до 32 символов. Пароль: от 8 символов.</p>
+        <p class="form-error" id="auth-error" role="alert" hidden></p>
+        <button type="submit" class="btn-primary" id="auth-submit">Войти</button>
+      </form>
+    </section>
+
+    <section class="main" id="main" hidden>
+      <header class="topbar">
+        <span class="wordmark">x-net</span>
+        <span class="signal" id="signal" data-status="connecting" role="status">Подключаемся</span>
+        <span class="me" id="me"></span>
+        <button type="button" class="btn-quiet" id="logout">Выйти</button>
+      </header>
+
+      <form class="composer" id="composer">
+        <label for="composer-text" class="visually-hidden">Текст поста</label>
+        <textarea id="composer-text" name="content" rows="3" placeholder="Что нового?"></textarea>
+        <div class="composer-bar">
+          <span class="counter" id="counter">0 / 280</span>
+          <button type="submit" class="btn-primary" id="publish" disabled>Опубликовать</button>
+        </div>
+        <p class="form-error" id="composer-error" role="alert" hidden></p>
+      </form>
+
+      <ol class="feed" id="feed"></ol>
+      <p class="feed-empty" id="feed-empty" hidden>Постов пока нет. Напишите первый, его сразу увидят все, кто онлайн.</p>
+      <button type="button" class="btn-quiet btn-more" id="more" hidden>Показать ещё</button>
+    </section>
+
+  </div>
+
+  <template id="post-template">
+    <li class="post">
+      <div class="post-head">
+        <span class="post-name"></span>
+        <span class="post-handle"></span>
+        <time class="post-time"></time>
+      </div>
+      <p class="post-body"></p>
+      <button type="button" class="post-delete" hidden>Удалить</button>
+    </li>
+  </template>
+</body>
+</html>
