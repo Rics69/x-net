@@ -16,6 +16,9 @@ import (
 	core_http_server "github.com/Rics69/x-net/internal/core/transport/http/server"
 	auth_service "github.com/Rics69/x-net/internal/features/auth/service"
 	auth_transport_http "github.com/Rics69/x-net/internal/features/auth/transport/http"
+	posts_postgres_repository "github.com/Rics69/x-net/internal/features/posts/repository/postgres"
+	posts_service "github.com/Rics69/x-net/internal/features/posts/service"
+	posts_transport_http "github.com/Rics69/x-net/internal/features/posts/transport/http"
 	users_postgres_repository "github.com/Rics69/x-net/internal/features/users/repository/postgres"
 	users_service "github.com/Rics69/x-net/internal/features/users/service"
 	users_transport_http "github.com/Rics69/x-net/internal/features/users/transport/http"
@@ -85,6 +88,12 @@ func main() {
 	authService := auth_service.NewAuthService(usersRepository, tokenManager)
 	authTransportHTTP := auth_transport_http.NewAuthHTTPHandler(authService, authConfig.CookieSecure)
 
+	logger.Debug("initializing feature", zap.String("feature", "posts"))
+
+	postsRepository := posts_postgres_repository.NewPostsRepository(db)
+	postsService := posts_service.NewPostsService(postsRepository)
+	postsTransportHTTP := posts_transport_http.NewPostsHTTPHandler(postsService, authMiddleware)
+
 	logger.Debug("initializing HTTP server")
 
 	httpServer := core_http_server.NewHTTPServer(
@@ -100,6 +109,7 @@ func main() {
 	apiVersionRouter := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
 	apiVersionRouter.RegisterRoutes(usersTransportHTTP.Routes()...)
 	apiVersionRouter.RegisterRoutes(authTransportHTTP.Routes()...)
+	apiVersionRouter.RegisterRoutes(postsTransportHTTP.Routes()...)
 
 	httpServer.RegisterAPIRouters(apiVersionRouter)
 

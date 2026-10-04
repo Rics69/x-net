@@ -127,6 +127,212 @@
                 }
             }
         },
+        "/posts": {
+            "get": {
+                "description": "Посты всех пользователей, от новых к старым, с курсорной пагинацией.\nПервая страница - без `cursor`. Следующая - `cursor` = `next_cursor` из предыдущего ответа.\n`next_cursor: null` - дальше постов нет",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Общая лента",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Размер страницы (1-100, по умолчанию 20)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Курсор из next_cursor предыдущей страницы",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Страница ленты",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_posts_transport_http.GetFeedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Публикация поста от имени авторизованного пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Создать пост",
+                "parameters": [
+                    {
+                        "description": "CreatePost тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_posts_transport_http.CreatePostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Созданный пост",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_posts_transport_http.CreatePostResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/{id}": {
+            "get": {
+                "description": "Получение конкретного поста по его ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Получение поста",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID поста",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Пост найден",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_posts_transport_http.GetPostResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удалить можно только свой пост",
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Удаление поста",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID удаляемого поста",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Пост удалён"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Post belongs to another user",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_Rics69_x-net_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "description": "Просмотр списка пользователей с опциональной пагинацией",
@@ -470,6 +676,112 @@
                 "username": {
                     "type": "string",
                     "example": "ivan_ivanov"
+                }
+            }
+        },
+        "internal_features_posts_transport_http.CreatePostRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "maxLength": 280,
+                    "example": "Hello, X-Net!"
+                }
+            }
+        },
+        "internal_features_posts_transport_http.CreatePostResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_features_posts_transport_http.PostAuthorDTOResponse"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "Hello, X-Net!"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-10-04T12:00:00Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 42
+                }
+            }
+        },
+        "internal_features_posts_transport_http.GetFeedResponse": {
+            "type": "object",
+            "properties": {
+                "next_cursor": {
+                    "description": "null - это последняя страница",
+                    "type": "string",
+                    "example": "eyJ0IjoiMjAyNi0xMC0wNFQxMjowMDowMFoiLCJpZCI6NDJ9"
+                },
+                "posts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_posts_transport_http.PostDTOResponse"
+                    }
+                }
+            }
+        },
+        "internal_features_posts_transport_http.GetPostResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_features_posts_transport_http.PostAuthorDTOResponse"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "Hello, X-Net!"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-10-04T12:00:00Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 42
+                }
+            }
+        },
+        "internal_features_posts_transport_http.PostAuthorDTOResponse": {
+            "type": "object",
+            "properties": {
+                "full_name": {
+                    "type": "string",
+                    "example": "Ivan Ivanov"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "username": {
+                    "type": "string",
+                    "example": "ivan_ivanov"
+                }
+            }
+        },
+        "internal_features_posts_transport_http.PostDTOResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_features_posts_transport_http.PostAuthorDTOResponse"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "Hello, X-Net!"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-10-04T12:00:00Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 42
                 }
             }
         },
