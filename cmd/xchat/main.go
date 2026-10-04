@@ -9,6 +9,7 @@ import (
 	"time"
 
 	core_auth "github.com/Rics69/x-net/internal/core/auth"
+	core_rabbitmq "github.com/Rics69/x-net/internal/core/broker/rabbitmq"
 	core_config "github.com/Rics69/x-net/internal/core/config"
 	core_logger "github.com/Rics69/x-net/internal/core/logger"
 	core_postgres_gorm "github.com/Rics69/x-net/internal/core/repository/postgres/gorm"
@@ -20,6 +21,7 @@ import (
 	posts_postgres_repository "github.com/Rics69/x-net/internal/features/posts/repository/postgres"
 	posts_service "github.com/Rics69/x-net/internal/features/posts/service"
 	posts_transport_http "github.com/Rics69/x-net/internal/features/posts/transport/http"
+	posts_transport_rabbitmq "github.com/Rics69/x-net/internal/features/posts/transport/rabbitmq"
 	posts_transport_ws "github.com/Rics69/x-net/internal/features/posts/transport/ws"
 	users_postgres_repository "github.com/Rics69/x-net/internal/features/users/repository/postgres"
 	users_service "github.com/Rics69/x-net/internal/features/users/service"
@@ -102,7 +104,41 @@ func main() {
 	logger.Debug("initializing feature", zap.String("feature", "posts"))
 
 	postsRepository := posts_postgres_repository.NewPostsRepository(db)
-	postsEventsPublisher := posts_transport_ws.NewPostsEventsPublisher(wsHub)
+
+	// сервису всё равно, кто доставляет события - он видит только интерфейс
+	var postsEventsPublisher posts_service.PostsEventsPublisher
+
+	rabbitConfig := core_rabbitmq.NewConfigMust()
+	if rabbitConfig.Enabled {
+		logger.Debug("initializing rabbitmq client")
+
+		rabbitClient := core_rabbitmq.NewClient(rabbitConfig, logger)
+
+		postsEventsConsumer := posts_transport_rabbitmq.NewPostsEventsConsumer(wsHub, logger)
+		rabbitClient.OnConnect(postsEventsConsumer.Setup)
+
+		// не блокируемся на старте, если брокер ещё не поднялся: Run сам будет переподключаться,
+		// а HTTP пока работает (события без брокера просто не уходят)
+		rabbitDone := make(chan struct{})
+		go func() {
+			defer close(rabbitDone)
+			rabbitClient.Run(ctx)
+		}()
+
+		// на выходе ждём, пока Run штатно закроет соединение. cancel() здесь же - на случай,
+		// если main выходит не по сигналу (например порт занят), иначе ждали бы вечно
+		defer func() {
+			cancel()
+			<-rabbitDone
+		}()
+
+		postsEventsPublisher = posts_transport_rabbitmq.NewPostsEventsPublisher(rabbitClient)
+	} else {
+		logger.Warn("rabbitmq disabled: posts events are delivered only to clients of this instance")
+
+		postsEventsPublisher = posts_transport_ws.NewPostsEventsPublisher(wsHub)
+	}
+
 	postsService := posts_service.NewPostsService(postsRepository, postsEventsPublisher)
 	postsTransportHTTP := posts_transport_http.NewPostsHTTPHandler(postsService, authMiddleware)
 

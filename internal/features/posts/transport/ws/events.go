@@ -1,6 +1,8 @@
 package posts_transport_ws
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/Rics69/x-net/internal/core/domain"
@@ -53,4 +55,29 @@ func postEventDTOFromDomain(post domain.Post) PostEventDTO {
 	}
 
 	return dto
+}
+
+// одни и те же байты уходят и в WebSocket, и в RabbitMQ: консьюмер на другом инстансе
+// просто отдаёт тело сообщения в свой хаб, не перекладывая JSON
+func MarshalPostCreatedEvent(post domain.Post) ([]byte, error) {
+	return marshalEvent(Event{
+		Type: EventTypePostCreated,
+		Data: postEventDTOFromDomain(post),
+	})
+}
+
+func MarshalPostDeletedEvent(postID int) ([]byte, error) {
+	return marshalEvent(Event{
+		Type: EventTypePostDeleted,
+		Data: PostDeletedEventDTO{ID: postID},
+	})
+}
+
+func marshalEvent(event Event) ([]byte, error) {
+	msg, err := json.Marshal(event)
+	if err != nil {
+		return nil, fmt.Errorf("marshal '%s' event: %w", event.Type, err)
+	}
+
+	return msg, nil
 }

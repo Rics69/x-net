@@ -4,16 +4,16 @@ export
 export PROJECT_ROOT= $(shell pwd)
 
 env-up:
-	@docker compose up -d xchat-postgres
+	@docker compose up -d xchat-postgres xchat-rabbitmq
 
 env-down:
-	@docker compose down xchat-postgres
+	@docker compose down xchat-postgres xchat-rabbitmq
 
 env-cleanup:
 	@read -p "Очистить volume файлы бд? Опасность утери данных. [y/N]: " ans; \
 	if [ "$$ans" = "y" ]; then \
-		docker compose down xchat-postgres port-forwarder && \
-		rm -rf ${PROJECT_ROOT}/out/pgdata && \
+		docker compose down xchat-postgres xchat-rabbitmq port-forwarder && \
+		rm -rf ${PROJECT_ROOT}/out/pgdata ${PROJECT_ROOT}/out/rabbitmq && \
 		echo "Файлы очищены"; \
 	else \
 		echo "Очистка отменена"; \
@@ -64,14 +64,23 @@ logs-cleanup:
 xchat-run:
 	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
 	export POSTGRES_HOST=localhost && \
+	export RABBITMQ_HOST=localhost && \
 	go mod tidy && \
 	go run ${PROJECT_ROOT}/cmd/xchat/main.go
 
+# второй инстанс на :5051 рядом с первым - для проверки доставки событий через RabbitMQ
+xchat-run-2:
+	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
+	export POSTGRES_HOST=localhost && \
+	export RABBITMQ_HOST=localhost && \
+	export HTTP_ADDR=:5051 && \
+	go run ${PROJECT_ROOT}/cmd/xchat/main.go
+
 xchat-deploy:
-	@docker compose up -d --build xchat
+	@docker compose up -d --build xchat xchat-2
 
 xchat-undeploy:
-	@docker compose down xchat
+	@docker compose down xchat xchat-2
 
 ps:
 	@docker compose ps
